@@ -5,3 +5,4 @@ streamlit
 requests
 apscheduler
 pandas
+reportlab
