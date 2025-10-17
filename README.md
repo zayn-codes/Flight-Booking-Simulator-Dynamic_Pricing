@@ -23,17 +23,27 @@ This project implements a full-stack flight reservation simulator, focusing on r
 
 ---
 
-Milestone/Task,Requirement,Status,Implementation Location
-M1: Foundational Database,Design & implement schema; Populate data.,Complete,db.sql and initialized via initialize_db.py.
-"M2, T1: Retrieval/Searching",Retrieve all flights; Search by Origin/Destination.,Complete,/flights/all and /flights endpoints in main.py.
-"M2, T2: Validation & Sorting",Implement input validation and sorting (by price).,Complete,main.py (Pydantic & Query parameters). Frontend handles input normalization.
-"M2, T3: Schedule API Simulation",Simulate external airline schedule APIs.,Complete,/airports endpoint in main.py fetches data from the DB to mimic an external source.
-"M2, T4, 5: Dynamic Pricing","Design logic (seats, time, demand); Integrate into search API.",Complete,main.py (calculate_dynamic_price()) and integrated into the /flights endpoint response.
-"M2, T6: Background Simulation",Build background process to simulate demand changes.,Complete,main.py uses APScheduler to periodically update the demand_factor in the database.
-M3: Concurrency Control,Implement concurrency safety (seat reservation).,Complete,/bookings POST endpoint uses SQLite database transactions for atomicity.
-M3: PNR & Confirmation,Generate unique PNR; Simulated payment/confirmation.,Complete,/bookings POST generates PNR and commits; /tickets/{pnr} generates downloadable PDF.
-M3: Cancellation/History,Build booking cancellation endpoint.,Complete,DELETE /bookings/{pnr} endpoint restores the seat count.
-## 🚀 How to Run the Project Locally
+That's a smart idea! Reframing the detailed implementation breakdown for the GitHub README makes your project instantly accessible and highlights your accomplishments clearly for anyone reviewing your code.
+
+Here is the complete **Milestone Implementation Breakdown** ready to be added to your `README.md`, placed right after your **Technology Stack** table.
+
+***
+
+## 📋 Milestone Implementation Breakdown
+
+This table details the fulfillment of all project requirements across the three milestones, providing a clear map of functionality within the codebase.
+
+| Milestone/Module | Task/Requirement | Status | Implementation Details (File & Function) |
+| :--- | :--- | :--- | :--- |
+| **M1: Foundational Database** | Design & implement schema; Populate data (Flights, Users, Bookings). | Complete | **`db.sql`** defines the finalized schema (using City/Country names). Data is initialized via `initialize_db.py`. |
+| **M2, T1-3: Search & Validation** | Retrieve all flights; Search by Origin/Destination; Input Validation & Sorting. | Complete | **`main.py`**: `/flights` and `/flights/all` endpoints handle retrieval and sorting. **`frontend.py`** uses Pydantic validation and typeahead search. |
+| **M2, T4, 5: Dynamic Pricing** | Design logic (seats, time, demand) and integrate into search API. | Complete | **`main.py`**: `calculate_dynamic_price()` function integrates all factors and is applied to all flight results. |
+| **M2, T6: Background Simulation** | Build background process to simulate demand/availability changes. | Complete | **`main.py`**: **APScheduler** runs the `update_demand_factor()` function every 5 minutes to simulate market shifts. |
+| **M3: Transaction Management** | **Concurrency Control** (PNR/Seat safety). | Complete | **`main.py`**: The `POST /bookings` endpoint uses **SQLite database transactions** to ensure atomic decrement of `seats_remaining`. |
+| **M3: Booking Confirmation** | Generate unique PNR; Simulated Payment/Confirmation. | Complete | **`main.py`**: PNR is generated on successful transaction. **ReportLab** generates the PDF ticket in the `/tickets/{pnr}` endpoint. |
+| **M3: Cancellation/History** | Build booking cancellation endpoint. | Complete | **`main.py`**: **`DELETE /bookings/{pnr}`** restores the seat count and removes the booking record from the database. |
+
+---## 🚀 How to Run the Project Locally
 
 Follow these steps to set up and run the simulator on your machine.
 
