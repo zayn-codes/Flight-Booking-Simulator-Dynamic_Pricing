@@ -52,7 +52,7 @@ Follow these steps to set up and run the simulator on your machine.
 
 ```bash
 # Clone the repository
-git clone [https://github.com/YourUsername/flight-booking-simulator.git](https://github.com/YourUsername/flight-booking-simulator.git)
+git clone [[https://github.com/YourUsername/flight-booking-simulator.git](https://github.com/YourUsername/flight-booking-simulator.git)](https://github.com/zayn-codes/Flight-Booking-Simulator-Dynamic_Pricing-.git)
 cd flight-booking-simulator
 
 # Create and activate a virtual environment
