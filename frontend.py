@@ -4,7 +4,7 @@ import pandas as pd
 from typing import Optional
 
 # --- Configuration ---
-FASTAPI_URL = "http://127.0.0.1:8000" 
+FASTAPI_URL = "https://flight-booking-simulator-dynamic-pricing.onrender.com"  # Change this to 'http://127.0.0.1:8000" when working locally
 
 # --- Helper Functions for API Communication ---
 
@@ -282,4 +282,5 @@ elif app_mode == "Make a Booking":
                                 unsafe_allow_html=True
                             )
                 except ValueError:
+
                     st.error("Please enter a valid number for Phone.")
