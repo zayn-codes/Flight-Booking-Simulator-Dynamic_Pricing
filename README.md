@@ -23,6 +23,8 @@ This project implements a full-stack flight reservation simulator, focusing on r
 
 ---
 
+📋 Milestone Implementation BreakdownThis table details where each project requirement has been fulfilled within the codebase:Milestone/ModuleTaskStatusImplementation in main.py / frontend.pyM1: Foundational DatabaseDesign & implement schema; Populate data.CompleteImplemented in db.sql and initialized via initialize_db.py.M2, T1-3: Search APIsRetrieve, Search (Origin/Dest), Input Validation, Sorting.Complete/flights and /airports endpoints in main.py. Frontend uses typeahead/autocomplete search.M2, T4, 5: Dynamic PricingDesign logic (seats, time, demand); Integrate into search API.Completecalculate_dynamic_price() function and integrated into /flights endpoint.M2, T6: Background SimulationBuild background process for demand/availability changes.Completemain.py uses APScheduler to periodically update demand_factor.M3: Transaction ManagementConcurrency Control (PNR/Seat safety).Complete/bookings POST endpoint uses SQLite database transactions for atomicity.M3: Booking ConfirmationGenerate unique PNR; Simulated Payment/Confirmation.Complete/bookings POST generates PNR; /tickets/{pnr} generates downloadable PDF.M3: Cancellation/HistoryBuild booking cancellation endpoint.CompleteDELETE /bookings/{pnr} endpoint restores seat count.
+
 ## 🚀 How to Run the Project Locally
 
 Follow these steps to set up and run the simulator on your machine.
