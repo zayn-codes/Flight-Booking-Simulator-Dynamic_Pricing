@@ -23,10 +23,6 @@ This project implements a full-stack flight reservation simulator, focusing on r
 
 ---
 
-That's a smart idea! Reframing the detailed implementation breakdown for the GitHub README makes your project instantly accessible and highlights your accomplishments clearly for anyone reviewing your code.
-
-Here is the complete **Milestone Implementation Breakdown** ready to be added to your `README.md`, placed right after your **Technology Stack** table.
-
 ***
 
 ## 📋 Milestone Implementation Breakdown
