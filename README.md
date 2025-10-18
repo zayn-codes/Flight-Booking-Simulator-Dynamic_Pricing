@@ -65,19 +65,13 @@ source venv/bin/activate
 Step 2: Install Dependencies
 Install all required Python packages:
 
-Bash
-
 pip install -r requirements.txt
 Step 3: Initialize the Database
 The database file (db.sqlite) must be created and populated with the initial schema and 175 sample flights.
 
-Bash
-
 python initialize_db.py
 Step 4: Start the FastAPI Backend (Server)
 Open your first terminal window, ensure the venv is active, and start the FastAPI application. This server handles all data and logic.
-
-Bash
 
 # Terminal 1: Start the Backend
 python -m uvicorn main:app --reload
@@ -85,8 +79,6 @@ python -m uvicorn main:app --reload
 
 Step 5: Start the Streamlit Frontend (Client)
 Open a second terminal window, ensure the venv is active, and start the Streamlit UI.
-
-Bash
 
 # Terminal 2: Start the Frontend
 streamlit run frontend.py
