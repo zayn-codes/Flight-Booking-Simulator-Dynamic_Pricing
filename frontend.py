@@ -6,7 +6,7 @@ import time
 import random
 
 # --- Configuration ---
-FASTAPI_URL = "http://127.0.0.1:8000" 
+FASTAPI_URL = "https://flight-booking-simulator-dynamic-pricing.onrender.com" #"http://127.0.0.1:8000" 
 
 # --- Helper Functions for API Communication ---
 
@@ -529,4 +529,5 @@ def render_main_app():
 if st.session_state['page'] == 'Landing':
     render_landing_page()
 else:
+
     render_main_app()
