@@ -37,6 +37,8 @@ CREATE TABLE flight (
 );
 
 -- Booking table with foreign keys linking to user and flight tables
+-- REVISED SCHEMA FOR MILESTONE 3: BOOKING TABLE
+
 CREATE TABLE booking (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
@@ -44,6 +46,8 @@ CREATE TABLE booking (
     pnr VARCHAR(10) NOT NULL UNIQUE,
     price_paid REAL NOT NULL,
     booking_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    -- NEW FIELD: Tracks the state of the booking transaction
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING_PAYMENT', 
     FOREIGN KEY (user_id) REFERENCES user (id),
     FOREIGN KEY (flight_id) REFERENCES flight (id)
 );
@@ -283,3 +287,19 @@ INSERT INTO flight (flight_number, airline, from_city_country, to_city_country, 
 ('FL198', 'British Airways', 'London, UK', 'New York, USA', 580.00, 220, 180),
 ('FL199', 'United Airlines', 'New York, USA', 'London, UK', 570.00, 220, 170),
 ('FL200', 'Emirates', 'Dubai, UAE', 'Seoul, South Korea', 700.00, 350, 310);
+
+
+
+-- ALTER TABLE command to add passenger name storage
+ALTER TABLE booking ADD COLUMN passenger_full_name VARCHAR(100);
+
+CREATE TABLE cancelled_booking (
+    archive_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    pnr VARCHAR(10),
+    user_id INTEGER,
+    flight_id INTEGER,
+    price_paid REAL,
+    refund_amount REAL,
+    cancellation_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    passenger_full_name VARCHAR(100)
+);
