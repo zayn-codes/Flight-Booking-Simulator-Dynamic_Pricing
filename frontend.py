@@ -377,7 +377,7 @@ def render_main_app():
                 if pay_submitted:
                     if len(card) == 16:
                         st.toast("Processing payment...")
-                        time.sleep(1) 
+                        time.sleep(4) 
                         
                         pay_result = api_request(f"bookings/pay/{pending['pnr']}", method='POST')
 
@@ -445,13 +445,12 @@ def render_main_app():
                     cols[3].write(row['Price Paid'])
                     
                     # Create the download button/link in the Actions column
-                    download_link = f"""
+                    download_link = f """
                     <a href="{FASTAPI_URL}/tickets/{pnr}" download="ticket_{pnr}.pdf">
                         <button style="background-color: #FF00FF; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 12px; cursor: pointer;">
                             Ticket ⬇️
                         </button>
-                    </a>
-                    """
+                    </a> """
                     cols[4].markdown(download_link, unsafe_allow_html=True)
                 
                 st.markdown("---")
@@ -530,3 +529,4 @@ if st.session_state['page'] == 'Landing':
 else:
 
     render_main_app()
+
