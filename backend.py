@@ -28,7 +28,8 @@ app = FastAPI()
 # --- Database Dependency/Connection Utility ---
 def get_db_connection():
     """Returns a connection object to the SQLite database with row_factory set to sqlite3.Row."""
-    conn = sqlite3.connect(DATABASE_NAME)
+    # Note: connect_args={"check_same_thread": False} is needed for SQLite with FastAPI/APScheduler
+    conn = sqlite3.connect(DATABASE_NAME, check_same_thread=False)
     conn.row_factory = sqlite3.Row 
     return conn
 
@@ -43,9 +44,12 @@ def get_db():
 # --- Pydantic Models for Data Validation and Schema ---
 
 class UserAuth(BaseModel):
-    """Schema for user registration and login credentials."""
+    """Schema for user registration and login credentials. UPDATED for registration."""
     username: str
     password: str 
+    full_name: Optional[str] = None
+    phone: Optional[str] = None
+    country: Optional[str] = None
 
 class Passenger(BaseModel):
     """Schema for passenger information."""
@@ -105,7 +109,7 @@ def calculate_dynamic_price(base_price: float, seats_remaining: int, total_seats
 
 def generate_ticket_pdf(pnr: str, booking_details: dict) -> str:
     """
-    Generates a PDF ticket structured like a boarding pass. 
+    Generates a PDF ticket structured like a boarding pass.
     """
     
     file_path = f"ticket_{pnr}.pdf"
@@ -122,8 +126,8 @@ def generate_ticket_pdf(pnr: str, booking_details: dict) -> str:
     simulated_time = (datetime.now() + timedelta(hours=2)).strftime("%I:%M %p") 
     
     # --- 1. Header Section ---
-    story.append(Paragraph("✈️ E-TICKET / BOARDING PASS", styles['Title']))
-    story.append(Paragraph(f"Booking Reference (PNR): {pnr}", styles['h2']))
+    story.append(Paragraph("✈️ **E-TICKET / BOARDING PASS**", styles['Title']))
+    story.append(Paragraph(f"**Booking Reference (PNR):** {pnr}", styles['h2']))
     story.append(Spacer(1, 0.2 * inch))
 
     # --- 2. Main Flight Details Table (Boarding Pass Layout) ---
@@ -132,26 +136,26 @@ def generate_ticket_pdf(pnr: str, booking_details: dict) -> str:
             # Column 1: Passenger and Flight Number
             [
                 Paragraph("PASSENGER NAME:", styles['h4']),
-                Paragraph(f"{booking_details['passenger_name'].upper()}", styles['Heading2']),
+                Paragraph(f"**{booking_details['passenger_name'].upper()}**", styles['Heading2']),
                 Spacer(1, 0.1 * inch),
                 Paragraph("FLIGHT:", styles['h4']),
-                Paragraph(f"{booking_details['flight_number']} ({booking_details['airline']})", styles['h3']),
+                Paragraph(f"**{booking_details['flight_number']} ({booking_details['airline']})**", styles['h3']),
             ],
             # Column 2: Route and Date
             [
                 Paragraph("ROUTE:", styles['h4']),
-                Paragraph(f"{booking_details['from_city_country']} -> {booking_details['to_city_country']}", styles['h3']),
+                Paragraph(f"{booking_details['from_city_country']} ➡️ {booking_details['to_city_country']}", styles['h3']),
                 Spacer(1, 0.1 * inch),
                 Paragraph("DATE:", styles['h4']),
-                Paragraph(f"{booking_details['booking_date'].split(' ')[0]}", styles['h3']),
+                Paragraph(f"**{booking_details['booking_date'].split(' ')[0]}**", styles['h3']),
             ],
             # Column 3: Seat and Gate (Simulated)
             [
                 Paragraph("GATE:", styles['h4']),
-                Paragraph(f"{simulated_gate}", styles['Heading2']),
+                Paragraph(f"**{simulated_gate}**", styles['Heading2']),
                 Spacer(1, 0.1 * inch),
                 Paragraph("SEAT:", styles['h4']),
-                Paragraph(f"{simulated_seat}", styles['Heading2']),
+                Paragraph(f"**{simulated_seat}**", styles['Heading2']),
             ]
         ]
     ]
@@ -173,7 +177,7 @@ def generate_ticket_pdf(pnr: str, booking_details: dict) -> str:
 
     # --- 3. Barcode Simulation Section ---
     story.append(Paragraph("BOARDING TIME:", styles['h4']))
-    story.append(Paragraph(f"{simulated_time}", styles['h1']))
+    story.append(Paragraph(f"**{simulated_time}**", styles['h1']))
     story.append(Spacer(1, 0.3 * inch))
     
     story.append(Paragraph("BARCODE DATA (Unique PNR):", styles['h4']))
@@ -196,12 +200,12 @@ def generate_cancellation_receipt(pnr: str, details: dict) -> str:
     story = []
 
     # Title
-    story.append(Paragraph("❌ CANCELLATION & REFUND RECEIPT", styles['Title']))
+    story.append(Paragraph("❌ **CANCELLATION & REFUND RECEIPT**", styles['Title']))
     story.append(Spacer(1, 0.3 * inch))
 
     # PNR and Date
-    story.append(Paragraph(f"Booking PNR: {pnr}", styles['h3']))
-    story.append(Paragraph(f"Cancellation Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", styles['h4']))
+    story.append(Paragraph(f"**Booking PNR:** {pnr}", styles['h3']))
+    story.append(Paragraph(f"**Cancellation Date:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", styles['h4']))
     story.append(Spacer(1, 0.5 * inch))
 
     # Refund Details Table
@@ -209,7 +213,7 @@ def generate_cancellation_receipt(pnr: str, details: dict) -> str:
         ["DESCRIPTION", "AMOUNT"],
         [f"Original Price Paid ({details['flight_number']})", f"${details['price_paid']:.2f}"],
         ["Cancellation Fee (20%)", f"${details['price_paid'] * 0.20:.2f}"],
-        [f"Refund Amount ({details['note']})", f"${details['refund_amount']:.2f}"],
+        [f"**Refund Amount ({details['note']})**", f"**${details['refund_amount']:.2f}**"],
     ]
     
     table_style = TableStyle([
@@ -220,8 +224,8 @@ def generate_cancellation_receipt(pnr: str, details: dict) -> str:
     
     t = Table(table_data, colWidths=[3.5*inch, 2*inch])
     t.setStyle(table_style)
-    story.append(Paragraph(f"User: {details['username']}", styles['h4']))
-    story.append(Paragraph(f"Passenger: {details['passenger_full_name']}", styles['h4']))
+    story.append(Paragraph(f"**User:** {details['username']}", styles['h4']))
+    story.append(Paragraph(f"**Passenger:** {details['passenger_full_name']}", styles['h4']))
     story.append(Spacer(1, 0.1 * inch))
     story.append(t)
     story.append(Spacer(1, 0.5 * inch))
@@ -266,7 +270,7 @@ def read_root():
 
 @app.post("/register")
 def register_user(user: UserAuth, db: sqlite3.Connection = Depends(get_db)):
-    """Registers a new user."""
+    """Registers a new user with full name, phone, and country."""
     cursor = db.cursor()
     
     cursor.execute("SELECT id FROM user WHERE username = ?", (user.username,))
@@ -276,14 +280,17 @@ def register_user(user: UserAuth, db: sqlite3.Connection = Depends(get_db)):
     hashed_password = hash_password(user.password)
     
     try:
+        # UPDATED SQL INSERT to include new fields
         cursor.execute(
-            "INSERT INTO user (username, password_hash) VALUES (?, ?)", 
-            (user.username, hashed_password)
+            "INSERT INTO user (username, password_hash, full_name, phone, country) VALUES (?, ?, ?, ?, ?)", 
+            (user.username, hashed_password, user.full_name, user.phone, user.country)
         )
         db.commit()
         return {"message": "User registered successfully", "username": user.username}
     except sqlite3.Error as e:
         db.rollback()
+        if "no such column" in str(e):
+             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="DB Error: User table schema is outdated. Please add full_name, phone, and country columns.")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Database error: {e}")
 
 @app.post("/login")
@@ -451,7 +458,6 @@ def create_booking(request: BookingRequest, db: sqlite3.Connection = Depends(get
 
     except sqlite3.Error as e:
         db.rollback()
-        # This error often occurs if the 'passenger_full_name' column is missing from the DB.
         if "no such column: passenger_full_name" in str(e):
              raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="DB Error: Missing 'passenger_full_name' column. Did you run ALTER TABLE?")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Booking creation failed: {e}")
@@ -481,7 +487,7 @@ def simulate_payment_and_confirm(pnr: str, db: sqlite3.Connection = Depends(get_
         # A. Decrement seat count (Transactional step)
         cursor.execute("UPDATE flight SET seats_remaining = seats_remaining - 1 WHERE id = ?", (flight_id,))
         
-        # B. Update booking status to CONFIRMED (CRITICAL FIX for history visibility)
+        # B. Update booking status to CONFIRMED
         cursor.execute(
             "UPDATE booking SET status = 'CONFIRMED' WHERE pnr = ?", 
             (pnr,)
@@ -509,7 +515,6 @@ def get_user_booking_history(user_id: int, db: sqlite3.Connection = Depends(get_
     """Fetches recent confirmed tickets and transaction history for a logged-in user, including username."""
     cursor = db.cursor()
     
-    # CRITICAL: Join user table to fetch username and select passenger_full_name
     cursor.execute("""
         SELECT 
             b.pnr, b.price_paid, b.booking_date, b.status, b.passenger_full_name,
@@ -530,6 +535,41 @@ def get_user_booking_history(user_id: int, db: sqlite3.Connection = Depends(get_
     formatted_history = [dict(row) for row in history]
     
     return {"user_id": user_id, "history": formatted_history, "total_bookings": len(formatted_history)}
+
+# --- NEW ENDPOINT TO FIX 404 ERROR ---
+@app.get("/bookings/cancelled/{user_id}")
+def get_cancellation_history(user_id: int, db: sqlite3.Connection = Depends(get_db)):
+    """Fetches the cancellation and refund history from the audit log."""
+    cursor = db.cursor()
+    
+    try:
+        # CRITICAL: Join flight and user tables to retrieve display data
+        cursor.execute("""
+            SELECT 
+                ca.pnr, ca.price_paid, ca.refund_amount, ca.cancellation_date, 
+                ca.passenger_full_name, f.flight_number, f.airline, u.username
+            FROM cancelled_booking ca
+            JOIN flight f ON ca.flight_id = f.id
+            JOIN user u ON ca.user_id = u.id
+            WHERE ca.user_id = ?
+            ORDER BY ca.cancellation_date DESC
+        """, (user_id,))
+        
+        history = cursor.fetchall()
+
+        if not history:
+            return {"user_id": user_id, "history": [], "message": "No cancellation history found for this user."}
+
+        formatted_history = [dict(row) for row in history]
+        
+        return {"user_id": user_id, "history": formatted_history, "total": len(formatted_history)}
+
+    except sqlite3.Error as e:
+        # This will catch errors like 'no such table: cancelled_booking'
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+            detail=f"Database error retrieving cancellation history. Ensure 'cancelled_booking' table exists: {e}"
+        )
 
 
 @app.get("/tickets/{pnr}")
@@ -587,10 +627,10 @@ def get_cancellation_receipt_pdf(pnr: str, db: sqlite3.Connection = Depends(get_
     """Retrieves cancellation data and generates/returns the PDF receipt."""
     cursor = db.cursor()
     
-    # 1. Fetch the necessary data for the receipt from the newly ARCHIVED table
+    # 1. Fetch the necessary data for the receipt from the ARCHIVED table
     cursor.execute("""
         SELECT 
-            ca.price_paid, ca.refund_amount, ca.pnr, ca.cancellation_date, ca.passenger_full_name, ca.refund_amount,
+            ca.price_paid, ca.refund_amount, ca.pnr, ca.cancellation_date, ca.passenger_full_name,
             f.flight_number, f.airline, u.username
         FROM cancelled_booking ca
         JOIN flight f ON ca.flight_id = f.id
@@ -639,12 +679,12 @@ def cancel_booking(pnr: str, db: sqlite3.Connection = Depends(get_db)):
             SELECT 
                 b.id, b.flight_id, b.price_paid, b.user_id, b.passenger_full_name
             FROM booking b
-            WHERE b.pnr = ?
+            WHERE b.pnr = ? AND UPPER(b.status) = 'CONFIRMED'
         """, (pnr.upper(),))
         booking = cursor.fetchone()
         
         if not booking:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Booking with PNR {pnr} not found or already cancelled.")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Booking with PNR {pnr} not found or not confirmed.")
             
         booking_id = booking['id']
         flight_id = booking['flight_id']
@@ -683,42 +723,6 @@ def cancel_booking(pnr: str, db: sqlite3.Connection = Depends(get_db)):
         
     except sqlite3.Error as e:
         db.rollback()
+        if "no such table: cancelled_booking" in str(e):
+             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="DB Error: Missing 'cancelled_booking' audit table. Please create it.")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Cancellation failed: {e}")
-    
-@app.get("/bookings/cancelled/{user_id}")
-def get_cancellation_history(user_id: int, db: sqlite3.Connection = Depends(get_db)):
-    """
-    Fetches the cancellation and refund history from the audit log (cancelled_booking table).
-    
-    This endpoint retrieves records that were successfully cancelled (deleted from the main booking table).
-    """
-    cursor = db.cursor()
-    
-    try:
-        # CRITICAL: Join flight and user tables to retrieve display data (names, flight number)
-        cursor.execute("""
-            SELECT 
-                ca.pnr, ca.price_paid, ca.refund_amount, ca.cancellation_date, 
-                ca.passenger_full_name, f.flight_number, f.airline, u.username
-            FROM cancelled_booking ca
-            JOIN flight f ON ca.flight_id = f.id
-            JOIN user u ON ca.user_id = u.id
-            WHERE ca.user_id = ?
-            ORDER BY ca.cancellation_date DESC
-        """, (user_id,))
-        
-        history = cursor.fetchall()
-
-        if not history:
-            return {"user_id": user_id, "history": [], "message": "No cancellation history found for this user."}
-
-        formatted_history = [dict(row) for row in history]
-        
-        return {"user_id": user_id, "history": formatted_history, "total": len(formatted_history)}
-
-    except sqlite3.Error as e:
-        # This will catch errors like 'no such table: cancelled_booking'
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
-            detail=f"Database error retrieving cancellation history. Ensure 'cancelled_booking' table exists: {e}"
-        )
