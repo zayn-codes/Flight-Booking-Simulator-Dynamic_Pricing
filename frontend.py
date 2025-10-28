@@ -81,7 +81,6 @@ def display_flights_data(flights, header_text, context_page):
     df = pd.DataFrame(flights)
 
     # Format currency and explicitly cast to string (object)
-    df['Price (Dynamic)'] = df['final_price'].apply(lambda x: f"${x:,.2f}").astype(str)
     df['Base Price'] = df['base_price'].apply(lambda x: f"${x:,.2f}").astype(str)
 
     # Renaming to display names
@@ -100,7 +99,7 @@ def display_flights_data(flights, header_text, context_page):
     except:
         max_seats = 1
 
-    display_cols = ['Flight No.', 'Airline', 'Origin', 'Destination', 'Seats Left', 'Price (Dynamic)', 'Base Price']
+    display_cols = ['Flight No.', 'Airline', 'Origin', 'Destination', 'Seats Left', 'Base Price']
 
     # --- Standard DataFrame Rendering ---
     st.dataframe(
@@ -108,10 +107,6 @@ def display_flights_data(flights, header_text, context_page):
         width='stretch', # Use recommended parameter
         hide_index=True,
         column_config={
-            "Price (Dynamic)": st.column_config.TextColumn(
-                "Price (Dynamic)",
-                help="Price adjusted based on demand and availability",
-            ),
              "Base Price": st.column_config.TextColumn(
                 "Base Price",
                 help="Base fare before adjustments",
@@ -771,5 +766,4 @@ def render_main_app():
 if st.session_state.get('page', 'Landing') == 'Landing':
     render_landing_page()
 else:
-
     render_main_app()

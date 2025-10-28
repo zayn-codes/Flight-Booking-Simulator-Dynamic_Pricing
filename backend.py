@@ -126,8 +126,8 @@ def generate_ticket_pdf(pnr: str, booking_details: dict) -> str:
     simulated_time = (datetime.now() + timedelta(hours=2)).strftime("%I:%M %p") 
     
     # --- 1. Header Section ---
-    story.append(Paragraph("✈️ **E-TICKET / BOARDING PASS**", styles['Title']))
-    story.append(Paragraph(f"**Booking Reference (PNR):** {pnr}", styles['h2']))
+    story.append(Paragraph("✈️ E-TICKET / BOARDING PASS", styles['Title']))
+    story.append(Paragraph(f"Booking Reference (PNR): {pnr}", styles['h2']))
     story.append(Spacer(1, 0.2 * inch))
 
     # --- 2. Main Flight Details Table (Boarding Pass Layout) ---
@@ -136,26 +136,26 @@ def generate_ticket_pdf(pnr: str, booking_details: dict) -> str:
             # Column 1: Passenger and Flight Number
             [
                 Paragraph("PASSENGER NAME:", styles['h4']),
-                Paragraph(f"**{booking_details['passenger_name'].upper()}**", styles['Heading2']),
+                Paragraph(f"{booking_details['passenger_name'].upper()}", styles['Heading2']),
                 Spacer(1, 0.1 * inch),
                 Paragraph("FLIGHT:", styles['h4']),
-                Paragraph(f"**{booking_details['flight_number']} ({booking_details['airline']})**", styles['h3']),
+                Paragraph(f"{booking_details['flight_number']} ({booking_details['airline']})", styles['h3']),
             ],
             # Column 2: Route and Date
             [
                 Paragraph("ROUTE:", styles['h4']),
-                Paragraph(f"{booking_details['from_city_country']} ➡️ {booking_details['to_city_country']}", styles['h3']),
+                Paragraph(f"{booking_details['from_city_country']} -> {booking_details['to_city_country']}", styles['h3']),
                 Spacer(1, 0.1 * inch),
                 Paragraph("DATE:", styles['h4']),
-                Paragraph(f"**{booking_details['booking_date'].split(' ')[0]}**", styles['h3']),
+                Paragraph(f"{booking_details['booking_date'].split(' ')[0]}", styles['h3']),
             ],
             # Column 3: Seat and Gate (Simulated)
             [
                 Paragraph("GATE:", styles['h4']),
-                Paragraph(f"**{simulated_gate}**", styles['Heading2']),
+                Paragraph(f"{simulated_gate}", styles['Heading2']),
                 Spacer(1, 0.1 * inch),
                 Paragraph("SEAT:", styles['h4']),
-                Paragraph(f"**{simulated_seat}**", styles['Heading2']),
+                Paragraph(f"{simulated_seat}", styles['Heading2']),
             ]
         ]
     ]
@@ -177,7 +177,7 @@ def generate_ticket_pdf(pnr: str, booking_details: dict) -> str:
 
     # --- 3. Barcode Simulation Section ---
     story.append(Paragraph("BOARDING TIME:", styles['h4']))
-    story.append(Paragraph(f"**{simulated_time}**", styles['h1']))
+    story.append(Paragraph(f"{simulated_time}", styles['h1']))
     story.append(Spacer(1, 0.3 * inch))
     
     story.append(Paragraph("BARCODE DATA (Unique PNR):", styles['h4']))
@@ -200,12 +200,12 @@ def generate_cancellation_receipt(pnr: str, details: dict) -> str:
     story = []
 
     # Title
-    story.append(Paragraph("❌ **CANCELLATION & REFUND RECEIPT**", styles['Title']))
+    story.append(Paragraph("❌ CANCELLATION & REFUND RECEIPT", styles['Title']))
     story.append(Spacer(1, 0.3 * inch))
 
     # PNR and Date
-    story.append(Paragraph(f"**Booking PNR:** {pnr}", styles['h3']))
-    story.append(Paragraph(f"**Cancellation Date:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", styles['h4']))
+    story.append(Paragraph(f"Booking PNR: {pnr}", styles['h3']))
+    story.append(Paragraph(f"Cancellation Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", styles['h4']))
     story.append(Spacer(1, 0.5 * inch))
 
     # Refund Details Table
@@ -213,7 +213,7 @@ def generate_cancellation_receipt(pnr: str, details: dict) -> str:
         ["DESCRIPTION", "AMOUNT"],
         [f"Original Price Paid ({details['flight_number']})", f"${details['price_paid']:.2f}"],
         ["Cancellation Fee (20%)", f"${details['price_paid'] * 0.20:.2f}"],
-        [f"**Refund Amount ({details['note']})**", f"**${details['refund_amount']:.2f}**"],
+        [f"Refund Amount ({details['note']})", f"${details['refund_amount']:.2f}"],
     ]
     
     table_style = TableStyle([
@@ -224,8 +224,8 @@ def generate_cancellation_receipt(pnr: str, details: dict) -> str:
     
     t = Table(table_data, colWidths=[3.5*inch, 2*inch])
     t.setStyle(table_style)
-    story.append(Paragraph(f"**User:** {details['username']}", styles['h4']))
-    story.append(Paragraph(f"**Passenger:** {details['passenger_full_name']}", styles['h4']))
+    story.append(Paragraph(f"User: {details['username']}", styles['h4']))
+    story.append(Paragraph(f"Passenger: {details['passenger_full_name']}", styles['h4']))
     story.append(Spacer(1, 0.1 * inch))
     story.append(t)
     story.append(Spacer(1, 0.5 * inch))
