@@ -7,7 +7,7 @@ import random
 from datetime import date # Needed for date input
 
 # --- Configuration ---
-FASTAPI_URL = "https://flight-booking-simulator-dynamic-pricing.onrender.com"
+FASTAPI_URL = "http://127.0.0.1:8000"
 
 # --- Helper Functions for API Communication ---
 
@@ -159,6 +159,8 @@ if 'autofill_flight_id' not in st.session_state:
     st.session_state['autofill_flight_id'] = ''
 if 'search_results' not in st.session_state:
     st.session_state['search_results'] = None
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
 
 # --- Custom CSS for Futuristic Theme ---
@@ -271,7 +273,7 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] > [data-
     padding: 0px;
     border-radius: 10px;
     border: 1px solid #555;
-    height: 0%; /* Ensure columns are equal height */
+    height: 100%; /* Ensure columns are equal height */
 }
 .testimonial-box blockquote {
     font-style: italic;
@@ -279,6 +281,33 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlock"] > [data-
     border-left: 3px solid #FF00FF;
     padding-left: 10px;
 }
+
+/* NEW: Chatbot Popover Style (Placed at bottom right) */
+/* Target the specific element that holds the popover content */
+div[data-testid="stPopover"] div[data-testid="stVerticalBlock"] {
+    position: fixed !important;
+    bottom: 60px; /* Above the footer */
+    right: 20px;
+    z-index: 999;
+    max-width: 350px;
+    min-width: 300px;
+    background-color: #1A1A22;
+    border: 1px solid #00FFFF;
+    border-radius: 15px;
+    box-shadow: 0 0 20px #00FFFF;
+}
+/* Ensure chat history scrolls correctly */
+div[data-testid="stChatMessageContainer"] {
+    max-height: 250px; /* Limit history height */
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column-reverse; /* Display newest messages at bottom */
+}
+/* Ensure the popover button stays at the bottom */
+div[data-testid="stPopover"] button {
+    margin-bottom: 0px !important;
+}
+
 
 </style>
 """, unsafe_allow_html=True)
@@ -525,6 +554,64 @@ def render_main_app():
         st.rerun()
 
 
+    # --- NEW: AI Chatbot Popover (Bottom Right) ---
+    st.sidebar.markdown("---")
+    
+    # We must use a popover since fixed position is unreliable in native Streamlit
+    with st.sidebar:
+        with st.popover("🤖 AI Trip Planner", use_container_width=True):
+            st.markdown("##### Skyline AI Assistant")
+            st.caption("Ask me to plan a trip! e.g., 'Plan a 5-day trip to Paris from New York.'")
+            
+            # Display chat history (reverse order for visual appeal)
+            # Use a container to make the history scrollable
+            history_container = st.container(height=350)
+            
+            with history_container:
+                # Display messages in reverse order (newest at bottom)
+                for message in reversed(st.session_state.messages):
+                    with st.chat_message(message["role"]):
+                        st.markdown(message["parts"])
+            
+            # Chat input at the bottom of the popover
+            if prompt := st.chat_input("How can I help you plan?", key="chat_input_box"):
+                # Add user message to history
+                st.session_state.messages.append({"role": "user", "parts": prompt})
+                
+                # Prepare data for backend
+                chat_data = {
+                    # Send all history including the new user message
+                    "history": st.session_state.messages,
+                    "prompt": prompt
+                }
+
+                # Call the backend /chat endpoint
+                # Immediately show user message before response comes in
+                st.rerun() 
+            
+            # This block runs after rerun, handles the API call and update
+            if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
+                last_prompt = st.session_state.messages[-1]["parts"]
+                
+                # Prepare data for backend
+                chat_data = {
+                    "history": st.session_state.messages[:-1], # Send history before the last prompt
+                    "prompt": last_prompt
+                }
+                
+                # Use a placeholder to show thinking message
+                with st.spinner("Thinking..."):
+                    response = api_request("chat", data=chat_data, method='POST')
+                    
+                    if response:
+                        response_text = response.get("parts", "Sorry, I encountered an error.")
+                        # Add model response to history and rerun
+                        st.session_state.messages.append({"role": "model", "parts": response_text})
+                    else:
+                        st.session_state.messages.append({"role": "model", "parts": "AI service is currently unavailable."})
+                    
+                    st.rerun()
+
     # --- Main Content Sections ---
 
     current_page = st.session_state.get('page')
@@ -533,7 +620,7 @@ def render_main_app():
         st.header("ACCESSING ALL FLIGHT SCHEDULES (DATA STREAM)")
         st.markdown("---")
         
-        # --- NEW: Domestic/International Tabbed View ---
+        # --- Domestic/International Tabbed View ---
         flights = api_request("flights/all", method='GET')
         
         if flights:
@@ -665,7 +752,7 @@ def render_main_app():
                 if pay_submitted:
                     if len(card) == 16:
                         st.toast("Processing payment...")
-                        time.sleep(1)
+                        time.sleep(5)
                         pay_result = api_request(f"bookings/pay/{pending['pnr']}", method='POST')
                         if pay_result and pay_result.get('status') == 'CONFIRMED':
                             st.success(pay_result['message'])
