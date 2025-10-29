@@ -7,7 +7,7 @@ This project implements a full-stack flight reservation simulator, focusing on r
 * **Milestone 1 (Database Foundation):** Implemented a clean SQL schema for flights, bookings, and users.
 * **Milestone 2 (Dynamic API & Pricing Engine):** Built a REST API using FastAPI and integrated a real-time dynamic pricing model based on seat availability, demand simulation, and a time factor.
 * **Milestone 3 (Transactional Workflow):** Developed a concurrency-safe booking endpoint using atomic database transactions (PNR generation, seat decrement) and implemented PDF ticket generation for confirmation.
-* **Frontend:** A responsive Streamlit application for searching, booking, and user authentication, simulating a modern flight booking experience.
+* **Milestone 4 (Frontend):** A responsive Streamlit application for searching, booking, and user authentication, simulating a modern flight booking experience.
 
 ---
 
