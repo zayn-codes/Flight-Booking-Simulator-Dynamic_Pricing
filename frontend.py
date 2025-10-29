@@ -7,7 +7,7 @@ import random
 from datetime import date # Needed for date input
 
 # --- Configuration ---
-FASTAPI_URL = "http://127.0.0.1:8000"
+FASTAPI_URL = "https://flight-booking-simulator-dynamic-pricing-vpfb.onrender.com"
 
 # --- Helper Functions for API Communication ---
 
@@ -853,4 +853,5 @@ def render_main_app():
 if st.session_state.get('page', 'Landing') == 'Landing':
     render_landing_page()
 else:
+
     render_main_app()
