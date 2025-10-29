@@ -6,4 +6,6 @@ requests
 apscheduler
 pandas
 google-genai
+google-generativeai
 reportlab
+
